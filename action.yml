@@ -1,0 +1,10 @@
+name: setup-infracost
+description: Sets up Infracost CLI in your GitHub Actions workflow. Show cloud cost estimates for Terraform in pull requests.
+inputs:
+  version:
+    description: Version of Infracost CLI to install
+    required: false
+    default: 0.9.13
+runs:
+  using: node12
+  main: dist/index.js

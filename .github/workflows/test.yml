@@ -1,0 +1,44 @@
+name: Tests
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  test:
+    name: Test
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [macos-latest, windows-latest, ubuntu-latest]
+        version: [0.9.12, 0.9.13]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Setup infracost
+        uses: ./
+        with:
+          version: ${{ matrix.version }}
+
+      - name: Capture infracost version installed
+        run: |
+          export INFRACOST_VERSION=$( infracost --version )
+          echo 'INFRACOST_VERSION_INSTALLED<<EOF' >> $GITHUB_ENV
+          infracost --version >> $GITHUB_ENV
+          echo 'EOF' >> $GITHUB_ENV
+      - name: Verify
+        shell: python
+        env:
+          INFRACOST_VERSION_EXPECTED: ${{ matrix.version }}
+        run: |
+          import sys, os
+          sys.exit(
+              int(not os.environ["INFRACOST_VERSION_EXPECTED"] in os.environ["INFRACOST_VERSION_INSTALLED"])
+          )
