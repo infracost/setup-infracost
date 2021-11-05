@@ -1,6 +1,7 @@
 const path = require('path');
 const core = require('@actions/core');
 const tc = require('@actions/tool-cache');
+const io = require('@actions/io');
 const os = require('os');
 
 // arch in [arm, x32, x64...] (https://nodejs.org/api/os.html#os_os_arch)
@@ -23,13 +24,28 @@ function mapOS(os) {
 
 function getDownloadObject(version) {
   const platform = os.platform();
-  const filename = `infracost_${ mapOS(platform) }_${ mapArch(os.arch()) }`;
-  const binPath = platform === 'win32' ? 'bin' : path.join(filename, 'bin');
+  const filename = `infracost-${ mapOS(platform) }-${ mapArch(os.arch()) }`;
+  const binaryName = platform === 'win32' ? 'infracost.exe' : filename;
   const url = `https://github.com/infracost/infracost/releases/download/v${ version }/${ filename }.tar.gz`;
   return {
     url,
-    binPath
+    binaryName
   };
+}
+
+// Rename infracost-<platform>-<arch> to infracost
+async function renameBinary(pathToCLI, binaryName) {
+  if(!binaryName.endsWith('.exe')) {
+    try {
+      source = path.join(pathToCLI, binaryName);
+      target = path.join(pathToCLI, 'infracost');
+      core.debug(`Moving ${source} to ${target}.`);
+      await io.mv(source, target);
+    } catch (e) {
+      core.error(`Unable to move ${source} to ${target}.`);
+      throw e;
+    }
+  }
 }
 
 async function setup() {
@@ -44,8 +60,11 @@ async function setup() {
     // Extract the tarball onto host runner
     const pathToCLI = await tc.extractTar(pathToTarball);
 
+    // Rename the platform/architecture specific binary to 'infracost'
+    await renameBinary(pathToCLI, download.binaryName)
+
     // Expose the tool by adding it to the PATH
-    core.addPath(path.join(pathToCLI, download.binPath));
+    core.addPath(pathToCLI);
   } catch (e) {
     core.setFailed(e);
   }
