@@ -17,7 +17,7 @@ jobs:
     strategy:
       matrix:
         os: [macos-latest, windows-latest, ubuntu-latest]
-        version: [0.9.11, 0.9.12]
+        version: [latest]
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -27,18 +27,19 @@ jobs:
         with:
           version: ${{ matrix.version }}
 
+      - name: Get latest version
+        run: |
+          export INFRACOST_LATEST_VERSION=$(curl -s https://api.github.com/repos/infracost/infracost/releases/latest | jq -r .name )
+          echo "Latest version: $INFRACOST_LATEST_VERSION"
+          echo "INFRACOST_LATEST_VERSION=Infracost $INFRACOST_LATEST_VERSION" >> $GITHUB_ENV
+
       - name: Capture infracost version installed
         run: |
-          export INFRACOST_VERSION=$( infracost --version )
-          echo 'INFRACOST_VERSION_INSTALLED<<EOF' >> $GITHUB_ENV
-          infracost --version >> $GITHUB_ENV
-          echo 'EOF' >> $GITHUB_ENV
+          echo "INFRACOST_VERSION_INSTALLED=$( infracost --version )" >> $GITHUB_ENV
       - name: Verify
         shell: python
-        env:
-          INFRACOST_VERSION_EXPECTED: ${{ matrix.version }}
         run: |
           import sys, os
           sys.exit(
-              int(not os.environ["INFRACOST_VERSION_EXPECTED"] in os.environ["INFRACOST_VERSION_INSTALLED"])
+              int(not os.environ["INFRACOST_LATEST_VERSION"] == os.environ["INFRACOST_VERSION_INSTALLED"])
           )

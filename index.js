@@ -23,10 +23,15 @@ function mapOS(os) {
 }
 
 function getDownloadObject(version) {
+  let path = `releases/download/v${ version }`
+  if (version === 'latest') {
+    path = `releases/latest/download`
+  }
+
   const platform = os.platform();
   const filename = `infracost-${ mapOS(platform) }-${ mapArch(os.arch()) }`;
   const binaryName = platform === 'win32' ? 'infracost.exe' : filename;
-  const url = `https://github.com/infracost/infracost/releases/download/v${ version }/${ filename }.tar.gz`;
+  const url = `https://github.com/infracost/infracost/${path}/${ filename }.tar.gz`;
   return {
     url,
     binaryName
@@ -36,10 +41,10 @@ function getDownloadObject(version) {
 // Rename infracost-<platform>-<arch> to infracost
 async function renameBinary(pathToCLI, binaryName) {
   if(!binaryName.endsWith('.exe')) {
+    const source = path.join(pathToCLI, binaryName);
+    const target = path.join(pathToCLI, 'infracost');
+    core.debug(`Moving ${source} to ${target}.`);
     try {
-      source = path.join(pathToCLI, binaryName);
-      target = path.join(pathToCLI, 'infracost');
-      core.debug(`Moving ${source} to ${target}.`);
       await io.mv(source, target);
     } catch (e) {
       core.error(`Unable to move ${source} to ${target}.`);
