@@ -11,7 +11,14 @@
   },
   "keywords": [],
   "homepage": "https://infracost.io",
-  "license": "MIT",
+  "author": "Infracost",
+  "license": "Apache-2.0",
+  "licenses": [
+    {
+      "type": "Apache-2.0",
+      "url": "https://raw.githubusercontent.com/infracost/cloud-pricing-api/master/LICENSE"
+    }
+  ],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/infracost/setup-infracost.git"
