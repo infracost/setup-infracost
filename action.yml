@@ -4,7 +4,7 @@ inputs:
   version:
     description: Version of Infracost CLI to install
     required: false
-    default: 0.9.13
+    default: 0.9.x
 runs:
   using: node12
   main: dist/index.js

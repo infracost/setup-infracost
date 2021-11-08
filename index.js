@@ -3,6 +3,8 @@ const core = require('@actions/core');
 const tc = require('@actions/tool-cache');
 const io = require('@actions/io');
 const os = require('os');
+const semver = require('semver')
+const { Octokit } = require("@octokit/rest");
 
 // arch in [arm, x32, x64...] (https://nodejs.org/api/os.html#os_os_arch)
 // return value in [amd64, 386, arm]
@@ -36,10 +38,10 @@ function getDownloadObject(version) {
 // Rename infracost-<platform>-<arch> to infracost
 async function renameBinary(pathToCLI, binaryName) {
   if(!binaryName.endsWith('.exe')) {
+    const source = path.join(pathToCLI, binaryName);
+    const target = path.join(pathToCLI, 'infracost');
+    core.debug(`Moving ${source} to ${target}.`);
     try {
-      source = path.join(pathToCLI, binaryName);
-      target = path.join(pathToCLI, 'infracost');
-      core.debug(`Moving ${source} to ${target}.`);
       await io.mv(source, target);
     } catch (e) {
       core.error(`Unable to move ${source} to ${target}.`);
@@ -48,10 +50,42 @@ async function renameBinary(pathToCLI, binaryName) {
   }
 }
 
+async function getVersion() {
+  const version = core.getInput('version');
+  if (semver.valid(version)) {
+    return semver.clean(version)
+  } else if (semver.validRange) {
+    const max = semver.maxSatisfying(await getAllVersions(), version)
+    if (max) {
+      return semver.clean(max);
+    } else {
+      core.warning(`${version} did not match any release version.`)
+    }
+  } else {
+    core.warning(`${version} is not a valid version or range.`)
+    return version
+  }
+}
+
+async function getAllVersions() {
+  const octokit = new Octokit();
+
+  const allVersions = []
+  for await (const response of octokit.paginate.iterator(
+    octokit.rest.repos.listReleases, { owner: "infracost", repo: "infracost" }
+  )) {
+    for (const release of response.data) {
+      allVersions.push(release.name)
+    }
+  }
+
+  return allVersions;
+}
+
 async function setup() {
   try {
     // Get version of tool to be installed
-    const version = core.getInput('version');
+    const version = await getVersion();
 
     // Download the specific version of the tool, e.g. as a tarball/zipball
     const download = getDownloadObject(version);
