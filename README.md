@@ -23,12 +23,7 @@ Assuming you have [downloaded Infracost](https://www.infracost.io/docs/#quick-st
 3. Create a new file in `.github/workflows/infracost.yml` in your repo with the following content. Typically this action will be used in conjunction with the [setup-terraform](https://github.com/hashicorp/setup-terraform) action. The GitHub Actions [docs](https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#on) describe other options for `on`, though `pull_request` is probably what you want.
 
 ```yaml
-on:
-  pull_request:
-    paths:
-      - '**.tf'
-      - '**.tfvars'
-      - '**.tfvars.json'
+on: [pull_request]
 jobs:
   infracost:
     runs-on: ubuntu-latest
