@@ -22,56 +22,57 @@ Assuming you have [downloaded Infracost](https://www.infracost.io/docs/#quick-st
 
 3. Create a new file in `.github/workflows/infracost.yml` in your repo with the following content. Typically this action will be used in conjunction with the [setup-terraform](https://github.com/hashicorp/setup-terraform) action. The GitHub Actions [docs](https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#on) describe other options for `on`, though `pull_request` is probably what you want.
 
-    ```yaml
-    on:
-      pull_request:
-        paths:
-          - '**.tf'
-          - '**.tfvars'
-          - '**.tfvars.json'
-    jobs:
-      infracost:
-        runs-on: ubuntu-latest
-        name: Post Infracost comment
-        steps:
-          - name: Check out repository
-            uses: actions/checkout@v2
+```yaml
+on:
+  pull_request:
+    paths:
+      - '**.tf'
+      - '**.tfvars'
+      - '**.tfvars.json'
+jobs:
+  infracost:
+    runs-on: ubuntu-latest
+    name: Post Infracost comment
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v2
 
-          - name: Install terraform
-            uses: hashicorp/setup-terraform@v1
+      - name: Install terraform
+        uses: hashicorp/setup-terraform@v1
 
-          - name: Terraform init
-            run: terraform init
-            working-directory: my-terraform
+      - name: Terraform init
+        run: terraform init
+        working-directory: path/to/my-terraform
 
-          - name: Terraform plan
-            run: terraform plan -out plan.tfplan
-            working-directory: my-terraform
+      - name: Terraform plan
+        run: terraform plan -out plan.tfplan
+        working-directory: path/to/my-terraform
 
-          - name: Terraform show
-            run: terraform show -json plan.tfplan
-            working-directory: my-terraform
+      - name: Terraform show
+        id: tf_show
+        run: terraform show -json plan.tfplan
+        working-directory: path/to/my-terraform
 
-          - name: Save Terraform Plan JSON
-            run: echo '${{ steps.show.outputs.stdout }}' > plan.json # Do not change
+      - name: Save Terraform Plan JSON
+        run: echo '${{ steps.tf_show.outputs.stdout }}' > plan.json # Do not change
 
-          - name: Setup Infracost
-            uses: infracost/setup-infracost@master
-            with:
-              api_key: ${{ secrets.INFRACOST_API_KEY }}
-              version: latest
+      - name: Setup Infracost
+        uses: infracost/setup-infracost@master
+        with:
+          api_key: ${{ secrets.INFRACOST_API_KEY }}
+          version: latest
 
-          - name: Infracost breakdown
-            run: infracost breakdown --path plan.json --format json --out-file infracost.json
+      - name: Infracost breakdown
+        run: infracost breakdown --path plan.json --format json --out-file infracost.json
 
-          - name: Infracost output
-            run: infracost output --path infracost.json --no-color --format github-comment --out-file infracost-comment.md
+      - name: Infracost output
+        run: infracost output --path infracost.json --no-color --format github-comment --out-file infracost-comment.md
 
-          - name: Post comment
-            uses: marocchino/sticky-pull-request-comment@v2
-            with:
-              path: infracost-comment.md
-    ```
+      - name: Post comment
+        uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          path: infracost-comment.md
+```
 
 ## Inputs
 
