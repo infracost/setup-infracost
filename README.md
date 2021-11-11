@@ -61,7 +61,7 @@ jobs:
         run: infracost breakdown --path plan.json --format json --out-file infracost.json
 
       - name: Infracost output
-        run: infracost output --path infracost.json --no-color --format github-comment --out-file infracost-comment.md
+        run: infracost output --path infracost.json --format github-comment --out-file infracost-comment.md
 
       - name: Post comment
         uses: marocchino/sticky-pull-request-comment@v2
