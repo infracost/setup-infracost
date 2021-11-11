@@ -23,7 +23,7 @@ function mapOS(os) {
   return mappings[os] || os;
 }
 
-function getDownloadObject(version) {
+function getDownloadObject(version): {url: string, binaryName: string} {
   let path = `releases/download/v${ version }`
   if (version === 'latest') {
     path = `releases/latest/download`
@@ -75,7 +75,7 @@ async function setup() {
     // Set configure options
     const apiKey = core.getInput('api_key');
     if (apiKey) {
-      returnCode = await exec.exec('infracost', ['configure', 'set', 'api_key', apiKey])
+      const returnCode = await exec.exec('infracost', ['configure', 'set', 'api_key', apiKey])
       if (returnCode !== 0) {
         throw new Error(`Error running infracost configure set api_key: ${returnCode}`);
       }
@@ -83,7 +83,7 @@ async function setup() {
 
     const currency = core.getInput('currency');
     if (currency) {
-      returnCode = await exec.exec('infracost', ['configure', 'set', 'currency', currency])
+      const returnCode = await exec.exec('infracost', ['configure', 'set', 'currency', currency])
       if (returnCode !== 0) {
         throw new Error(`Error running infracost configure set currency: ${returnCode}`);
       }
@@ -91,7 +91,7 @@ async function setup() {
 
     const pricingApiEndpoint = core.getInput('pricing_api_endpoint');
     if (pricingApiEndpoint) {
-      returnCode = await exec.exec('infracost', ['configure', 'set', 'pricing_api_endpoint', pricingApiEndpoint])
+      const returnCode = await exec.exec('infracost', ['configure', 'set', 'pricing_api_endpoint', pricingApiEndpoint])
       if (returnCode !== 0) {
         throw new Error(`Error running infracost configure set pricing_api_endpoint: ${returnCode}`);
       }
