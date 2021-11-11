@@ -5407,10 +5407,29 @@ module.exports = v4;
 /***/ }),
 
 /***/ 144:
-/***/ (function(module, __unused_webpack_exports, __nccwpck_require__) {
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
 "use strict";
 
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -5420,17 +5439,21 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-const path = __nccwpck_require__(622);
-const core = __nccwpck_require__(186);
-const tc = __nccwpck_require__(784);
-const io = __nccwpck_require__(436);
-const os = __nccwpck_require__(87);
-const exec = __nccwpck_require__(514);
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+const path_1 = __importDefault(__nccwpck_require__(622));
+const core = __importStar(__nccwpck_require__(186));
+const tc = __importStar(__nccwpck_require__(784));
+const io = __importStar(__nccwpck_require__(436));
+const os_1 = __importDefault(__nccwpck_require__(87));
+const exec = __importStar(__nccwpck_require__(514));
 // arch in [arm, x32, x64...] (https://nodejs.org/api/os.html#os_os_arch)
 // return value in [amd64, 386, arm]
 function mapArch(arch) {
     const mappings = {
-        x64: 'amd64'
+        x64: "amd64",
     };
     return mappings[arch] || arch;
 }
@@ -5438,30 +5461,30 @@ function mapArch(arch) {
 // return value in [darwin, linux, windows]
 function mapOS(os) {
     const mappings = {
-        win32: 'windows'
+        win32: "windows",
     };
     return mappings[os] || os;
 }
 function getDownloadObject(version) {
     let path = `releases/download/v${version}`;
-    if (version === 'latest') {
+    if (version === "latest") {
         path = `releases/latest/download`;
     }
-    const platform = os.platform();
-    const filename = `infracost-${mapOS(platform)}-${mapArch(os.arch())}`;
-    const binaryName = platform === 'win32' ? 'infracost.exe' : filename;
+    const platform = os_1.default.platform();
+    const filename = `infracost-${mapOS(platform)}-${mapArch(os_1.default.arch())}`;
+    const binaryName = platform === "win32" ? "infracost.exe" : filename;
     const url = `https://github.com/infracost/infracost/${path}/${filename}.tar.gz`;
     return {
         url,
-        binaryName
+        binaryName,
     };
 }
 // Rename infracost-<platform>-<arch> to infracost
 function renameBinary(pathToCLI, binaryName) {
     return __awaiter(this, void 0, void 0, function* () {
-        if (!binaryName.endsWith('.exe')) {
-            const source = path.join(pathToCLI, binaryName);
-            const target = path.join(pathToCLI, 'infracost');
+        if (!binaryName.endsWith(".exe")) {
+            const source = path_1.default.join(pathToCLI, binaryName);
+            const target = path_1.default.join(pathToCLI, "infracost");
             core.debug(`Moving ${source} to ${target}.`);
             try {
                 yield io.mv(source, target);
@@ -5477,7 +5500,7 @@ function setup() {
     return __awaiter(this, void 0, void 0, function* () {
         try {
             // Get version of tool to be installed
-            const version = core.getInput('version');
+            const version = core.getInput("version");
             // Download the specific version of the tool, e.g. as a tarball/zipball
             const download = getDownloadObject(version);
             const pathToTarball = yield tc.downloadTool(download.url);
@@ -5488,23 +5511,38 @@ function setup() {
             // Expose the tool by adding it to the PATH
             core.addPath(pathToCLI);
             // Set configure options
-            const apiKey = core.getInput('api_key');
+            const apiKey = core.getInput("api_key");
             if (apiKey) {
-                const returnCode = yield exec.exec('infracost', ['configure', 'set', 'api_key', apiKey]);
+                const returnCode = yield exec.exec("infracost", [
+                    "configure",
+                    "set",
+                    "api_key",
+                    apiKey,
+                ]);
                 if (returnCode !== 0) {
                     throw new Error(`Error running infracost configure set api_key: ${returnCode}`);
                 }
             }
-            const currency = core.getInput('currency');
+            const currency = core.getInput("currency");
             if (currency) {
-                const returnCode = yield exec.exec('infracost', ['configure', 'set', 'currency', currency]);
+                const returnCode = yield exec.exec("infracost", [
+                    "configure",
+                    "set",
+                    "currency",
+                    currency,
+                ]);
                 if (returnCode !== 0) {
                     throw new Error(`Error running infracost configure set currency: ${returnCode}`);
                 }
             }
-            const pricingApiEndpoint = core.getInput('pricing_api_endpoint');
+            const pricingApiEndpoint = core.getInput("pricing_api_endpoint");
             if (pricingApiEndpoint) {
-                const returnCode = yield exec.exec('infracost', ['configure', 'set', 'pricing_api_endpoint', pricingApiEndpoint]);
+                const returnCode = yield exec.exec("infracost", [
+                    "configure",
+                    "set",
+                    "pricing_api_endpoint",
+                    pricingApiEndpoint,
+                ]);
                 if (returnCode !== 0) {
                     throw new Error(`Error running infracost configure set pricing_api_endpoint: ${returnCode}`);
                 }
@@ -5515,7 +5553,6 @@ function setup() {
         }
     });
 }
-module.exports = setup;
 if (require.main === require.cache[eval('__filename')]) {
     setup();
 }
