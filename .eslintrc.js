@@ -33,14 +33,6 @@ module.exports = {
     'no-use-before-define': 'off',
     'no-useless-constructor': 'off',
   },
-  overrides: [
-    {
-      files: ['src/api/resolvers/**/*'],
-      rules: {
-        'import/prefer-default-export': 'off',
-      }
-    },
-  ],
   ignorePatterns: [
     'src/generated/**/*',
     'dist/**/*',
