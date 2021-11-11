@@ -6,7 +6,7 @@ This GitHub Action downloads and installs the [Infracost CLI](https://github.com
 
 ## Usage
 
-Assuming you have [downloaded Infracost](https://www.infracost.io/docs/#quick-start) and ran `infracost register` to get an API key, you should:
+Assuming you have [downloaded Infracost](https://www.infracost.io/docs/#quick-start) and run `infracost register` to get an API key, you should:
 
 1. [Add repo secrets](https://docs.github.com/en/actions/configuring-and-managing-workflows/creating-and-storing-encrypted-secrets#creating-encrypted-secrets-for-a-repository) for `INFRACOST_API_KEY` and any other required credentials to your GitHub repo (e.g. `AWS_ACCESS_KEY_ID`).
 
