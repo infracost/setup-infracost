@@ -48,7 +48,7 @@ jobs:
         shell: bash
         run: |
           if [ "$INFRACOST_LATEST_VERSION" != "$INFRACOST_VERSION_INSTALLED" ]; then
-            echo "Unexpected api_key, got: $CONFIGURED_API_KEY"
+            echo "Unexpected version, expected $INFRACOST_LATEST_VERSION, got: $INFRACOST_VERSION_INSTALLED"
             exit 1;
           elif [ "abcdefg123456" != "$CONFIGURED_API_KEY" ]; then
             echo "Unexpected api_key, got: $CONFIGURED_API_KEY"
