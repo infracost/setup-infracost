@@ -33,7 +33,9 @@ jobs:
       - name: Get latest version
         run: |
           curl -s https://api.github.com/repos/infracost/infracost/releases/latest -o latest.json
+          cat latest.json
           export INFRACOST_LATEST_VERSION=$(jq -r .name latest.json)
+          echo "$(jq . latest.json)"
           echo "Latest version: $INFRACOST_LATEST_VERSION"
           echo "INFRACOST_LATEST_VERSION=Infracost $INFRACOST_LATEST_VERSION" >> $GITHUB_ENV
 
