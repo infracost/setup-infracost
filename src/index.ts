@@ -1,15 +1,15 @@
-import path from "path";
-import * as core from "@actions/core";
-import * as tc from "@actions/tool-cache";
-import * as io from "@actions/io";
-import os from "os";
-import * as exec from "@actions/exec";
+import path from 'path';
+import * as core from '@actions/core';
+import * as tc from '@actions/tool-cache';
+import * as io from '@actions/io';
+import os from 'os';
+import * as exec from '@actions/exec';
 
 // arch in [arm, x32, x64...] (https://nodejs.org/api/os.html#os_os_arch)
 // return value in [amd64, 386, arm]
 function mapArch(arch) {
   const mappings = {
-    x64: "amd64",
+    x64: 'amd64',
   };
   return mappings[arch] || arch;
 }
@@ -18,20 +18,20 @@ function mapArch(arch) {
 // return value in [darwin, linux, windows]
 function mapOS(os) {
   const mappings = {
-    win32: "windows",
+    win32: 'windows',
   };
   return mappings[os] || os;
 }
 
 function getDownloadObject(version): { url: string; binaryName: string } {
   let path = `releases/download/v${version}`;
-  if (version === "latest") {
+  if (version === 'latest') {
     path = `releases/latest/download`;
   }
 
   const platform = os.platform();
   const filename = `infracost-${mapOS(platform)}-${mapArch(os.arch())}`;
-  const binaryName = platform === "win32" ? "infracost.exe" : filename;
+  const binaryName = platform === 'win32' ? 'infracost.exe' : filename;
   const url = `https://github.com/infracost/infracost/${path}/${filename}.tar.gz`;
   return {
     url,
@@ -41,9 +41,9 @@ function getDownloadObject(version): { url: string; binaryName: string } {
 
 // Rename infracost-<platform>-<arch> to infracost
 async function renameBinary(pathToCLI, binaryName) {
-  if (!binaryName.endsWith(".exe")) {
+  if (!binaryName.endsWith('.exe')) {
     const source = path.join(pathToCLI, binaryName);
-    const target = path.join(pathToCLI, "infracost");
+    const target = path.join(pathToCLI, 'infracost');
     core.debug(`Moving ${source} to ${target}.`);
     try {
       await io.mv(source, target);
@@ -57,7 +57,7 @@ async function renameBinary(pathToCLI, binaryName) {
 async function setup() {
   try {
     // Get version of tool to be installed
-    const version = core.getInput("version");
+    const version = core.getInput('version');
 
     // Download the specific version of the tool, e.g. as a tarball/zipball
     const download = getDownloadObject(version);
@@ -73,12 +73,12 @@ async function setup() {
     core.addPath(pathToCLI);
 
     // Set configure options
-    const apiKey = core.getInput("api_key");
+    const apiKey = core.getInput('api_key');
     if (apiKey) {
-      const returnCode = await exec.exec("infracost", [
-        "configure",
-        "set",
-        "api_key",
+      const returnCode = await exec.exec('infracost', [
+        'configure',
+        'set',
+        'api_key',
         apiKey,
       ]);
       if (returnCode !== 0) {
@@ -88,12 +88,12 @@ async function setup() {
       }
     }
 
-    const currency = core.getInput("currency");
+    const currency = core.getInput('currency');
     if (currency) {
-      const returnCode = await exec.exec("infracost", [
-        "configure",
-        "set",
-        "currency",
+      const returnCode = await exec.exec('infracost', [
+        'configure',
+        'set',
+        'currency',
         currency,
       ]);
       if (returnCode !== 0) {
@@ -103,12 +103,12 @@ async function setup() {
       }
     }
 
-    const pricingApiEndpoint = core.getInput("pricing_api_endpoint");
+    const pricingApiEndpoint = core.getInput('pricing_api_endpoint');
     if (pricingApiEndpoint) {
-      const returnCode = await exec.exec("infracost", [
-        "configure",
-        "set",
-        "pricing_api_endpoint",
+      const returnCode = await exec.exec('infracost', [
+        'configure',
+        'set',
+        'pricing_api_endpoint',
         pricingApiEndpoint,
       ]);
       if (returnCode !== 0) {

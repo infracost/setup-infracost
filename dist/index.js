@@ -5453,7 +5453,7 @@ const exec = __importStar(__nccwpck_require__(514));
 // return value in [amd64, 386, arm]
 function mapArch(arch) {
     const mappings = {
-        x64: "amd64",
+        x64: 'amd64',
     };
     return mappings[arch] || arch;
 }
@@ -5461,18 +5461,18 @@ function mapArch(arch) {
 // return value in [darwin, linux, windows]
 function mapOS(os) {
     const mappings = {
-        win32: "windows",
+        win32: 'windows',
     };
     return mappings[os] || os;
 }
 function getDownloadObject(version) {
     let path = `releases/download/v${version}`;
-    if (version === "latest") {
+    if (version === 'latest') {
         path = `releases/latest/download`;
     }
     const platform = os_1.default.platform();
     const filename = `infracost-${mapOS(platform)}-${mapArch(os_1.default.arch())}`;
-    const binaryName = platform === "win32" ? "infracost.exe" : filename;
+    const binaryName = platform === 'win32' ? 'infracost.exe' : filename;
     const url = `https://github.com/infracost/infracost/${path}/${filename}.tar.gz`;
     return {
         url,
@@ -5482,9 +5482,9 @@ function getDownloadObject(version) {
 // Rename infracost-<platform>-<arch> to infracost
 function renameBinary(pathToCLI, binaryName) {
     return __awaiter(this, void 0, void 0, function* () {
-        if (!binaryName.endsWith(".exe")) {
+        if (!binaryName.endsWith('.exe')) {
             const source = path_1.default.join(pathToCLI, binaryName);
-            const target = path_1.default.join(pathToCLI, "infracost");
+            const target = path_1.default.join(pathToCLI, 'infracost');
             core.debug(`Moving ${source} to ${target}.`);
             try {
                 yield io.mv(source, target);
@@ -5500,7 +5500,7 @@ function setup() {
     return __awaiter(this, void 0, void 0, function* () {
         try {
             // Get version of tool to be installed
-            const version = core.getInput("version");
+            const version = core.getInput('version');
             // Download the specific version of the tool, e.g. as a tarball/zipball
             const download = getDownloadObject(version);
             const pathToTarball = yield tc.downloadTool(download.url);
@@ -5511,36 +5511,36 @@ function setup() {
             // Expose the tool by adding it to the PATH
             core.addPath(pathToCLI);
             // Set configure options
-            const apiKey = core.getInput("api_key");
+            const apiKey = core.getInput('api_key');
             if (apiKey) {
-                const returnCode = yield exec.exec("infracost", [
-                    "configure",
-                    "set",
-                    "api_key",
+                const returnCode = yield exec.exec('infracost', [
+                    'configure',
+                    'set',
+                    'api_key',
                     apiKey,
                 ]);
                 if (returnCode !== 0) {
                     throw new Error(`Error running infracost configure set api_key: ${returnCode}`);
                 }
             }
-            const currency = core.getInput("currency");
+            const currency = core.getInput('currency');
             if (currency) {
-                const returnCode = yield exec.exec("infracost", [
-                    "configure",
-                    "set",
-                    "currency",
+                const returnCode = yield exec.exec('infracost', [
+                    'configure',
+                    'set',
+                    'currency',
                     currency,
                 ]);
                 if (returnCode !== 0) {
                     throw new Error(`Error running infracost configure set currency: ${returnCode}`);
                 }
             }
-            const pricingApiEndpoint = core.getInput("pricing_api_endpoint");
+            const pricingApiEndpoint = core.getInput('pricing_api_endpoint');
             if (pricingApiEndpoint) {
-                const returnCode = yield exec.exec("infracost", [
-                    "configure",
-                    "set",
-                    "pricing_api_endpoint",
+                const returnCode = yield exec.exec('infracost', [
+                    'configure',
+                    'set',
+                    'pricing_api_endpoint',
                     pricingApiEndpoint,
                 ]);
                 if (returnCode !== 0) {
