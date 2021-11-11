@@ -1,97 +1,89 @@
 # setup-infracost
 
-Sets up Infracost CLI in your GitHub Actions workflow.  Show cloud cost estimates for Terraform in pull requests.
+Infracost enables you to see cloud cost estimates for Terraform in pull requests.
 
-This `setup-infracost` action downloads and installs the Infracost CLI.  Subsequent steps in the same job can run this CLI in the same way it is run on the command line.
+This GitHub Action downloads and installs the [Infracost CLI](https://github.com/infracost/infracost) in your GitHub Actions workflow. Subsequent steps in the same job can run the CLI in the same way it is run on the command line.
 
 ## Usage
 
-By default, the latest version of the Infracost CLI is installed, but a specific version can be specified:
+Assuming you have [downloaded Infracost](https://www.infracost.io/docs/#quick-start) and ran `infracost register` to get an API key, you should:
 
-```yaml
-steps:
-- uses: infracost/setup-infracost@v1
-  with:
-    version: 0.9.13
-```
+1. [Add repo secrets](https://docs.github.com/en/actions/configuring-and-managing-workflows/creating-and-storing-encrypted-secrets#creating-encrypted-secrets-for-a-repository) for `INFRACOST_API_KEY` and any other required credentials to your GitHub repo (e.g. `AWS_ACCESS_KEY_ID`).
 
-It is usually convenient to configure the Infracost API key:
+2. By default, the latest version of the Infracost CLI is installed; you can override that using the `version` input.
 
-```yaml
-steps:
-- uses: infracost/setup-infracost@v1
-  with:
-    api_key: ${{ secrets.INFRACOST_API_KEY }}
-```
-
-Typically this action will be used in conjunction with the `setup-terraform` action to comment on a pull request with the cost estimate for a terraform project.
-
-```yaml
-on:
-  pull_request:
-    paths:
-      - '**.tf'
-      - '**.tfvars'
-      - '**.tfvars.json'
-jobs:
-  infracost:
-    runs-on: ubuntu-latest
-    name: Show infracost diff
+    ```yml
     steps:
-      - name: Check out repository
-        uses: actions/checkout@v2
+    - uses: infracost/setup-infracost@master
+      with:
+        api_key: ${{ secrets.INFRACOST_API_KEY }}
+        version: latest # See https://github.com/infracost/infracost/releases for other versions
+    ```
 
-      - name: "Instance infracost"
-        uses: infracost/setup-infracost@v1
-        with:
-          version: latest
-          api_key: ${{ secrets.INFRACOST_API_KEY }}
+3. Create a new file in `.github/workflows/infracost.yml` in your repo with the following content. Typically this action will be used in conjunction with the [setup-terraform](https://github.com/hashicorp/setup-terraform) action. The GitHub Actions [docs](https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#on) describe other options for `on`, though `pull_request` is probably what you want.
 
-      - name: "Install terraform"
-        uses: hashicorp/setup-terraform@v1
+    ```yaml
+    on:
+      pull_request:
+        paths:
+          - '**.tf'
+          - '**.tfvars'
+          - '**.tfvars.json'
+    jobs:
+      infracost:
+        runs-on: ubuntu-latest
+        name: Post Infracost comment
+        steps:
+          - name: Check out repository
+            uses: actions/checkout@v2
 
-      - name: "Terraform init"
-        id: init
-        run: terraform init
-        working-directory: terraform
+          - name: Install terraform
+            uses: hashicorp/setup-terraform@v1
 
-      - name: "Terraform plan"
-        id: plan
-        run: terraform plan -out plan.tfplan
-        working-directory: terraform
+          - name: Terraform init
+            run: terraform init
+            working-directory: my-terraform
 
-      - name: "Terraform show"
-        id: show
-        run: terraform show -json plan.tfplan
-        working-directory: terraform
+          - name: Terraform plan
+            run: terraform plan -out plan.tfplan
+            working-directory: my-terraform
 
-      - name: "Save Plan JSON"
-        run: echo '${{ steps.show.outputs.stdout }}' > plan.json # Do not change
+          - name: Terraform show
+            run: terraform show -json plan.tfplan
+            working-directory: my-terraform
 
-      - name: "Infracost breakdown"
-        run: infracost breakdown --path plan.json --format json > breakdown.json
+          - name: Save Terraform Plan JSON
+            run: echo '${{ steps.show.outputs.stdout }}' > plan.json # Do not change
 
-      - name: "Infracost output"
-        run: infracost output --no-color --format github-comment --path breakdown.json > comment.md
+          - name: Setup Infracost
+            uses: infracost/setup-infracost@master
+            with:
+              api_key: ${{ secrets.INFRACOST_API_KEY }}
+              version: latest
 
-      - name: "Post comment"
-        uses: marocchino/sticky-pull-request-comment@v2
-        with:
-          path: comment.md
-```
+          - name: Infracost breakdown
+            run: infracost breakdown --path plan.json --format json --out-file infracost.json
+
+          - name: Infracost output
+            run: infracost output --path infracost.json --no-color --format github-comment --out-file infracost-comment.md
+
+          - name: Post comment
+            uses: marocchino/sticky-pull-request-comment@v2
+            with:
+              path: infracost-comment.md
+    ```
 
 ## Inputs
 
 The action supports the following inputs:
 
-- `version` - (optional) Version of Infracost CLI to install. E.g. 0.9.13
+- `api_key`: Required. The Infracost API key.
 
-- `api_key` - (optional) The Infracost API key.
+- `version`: Optional. [Version](https://github.com/infracost/infracost/releases) of Infracost CLI to install, e.g. 0.9.13.
 
-- `currency` - (optional) Preferred currency code (ISO 4217).  E.g. EUR
+- `currency`: Optional. Convert output from USD to your preferred [ISO 4217 currency](https://en.wikipedia.org/wiki/ISO_4217#Active_codes), e.g. EUR, BRL or INR.
 
-- `pricing_api_endpoint` - (optional) The address of a self hosted Cloud Pricing API.  See https://www.infracost.io/docs/cloud_pricing_api/self_hosted
-
+- `pricing_api_endpoint`: Optional. For [self-hosted](https://www.infracost.io/docs/cloud_pricing_api/self_hosted) users, endpoint of the Cloud Pricing API, e.g. https://cloud-pricing-api.
 
 ## Outputs
 
