@@ -26,6 +26,9 @@ jobs:
         uses: ./
         with:
           version: ${{ matrix.version }}
+          api_key: abcdefg123456
+          currency: GBP
+          pricing_api_endpoint: https://test.test
 
       - name: Get latest version
         run: |
@@ -36,10 +39,27 @@ jobs:
       - name: Capture infracost version installed
         run: |
           echo "INFRACOST_VERSION_INSTALLED=$( infracost --version )" >> $GITHUB_ENV
+      - name: Capture infracost configure settings
+        run : |
+          echo "CONFIGURED_API_KEY=$( infracost configure get api_key )" >> $GITHUB_ENV
+          echo "CONFIGURED_CURRENCY=$( infracost configure get currency )" >> $GITHUB_ENV
+          echo "CONFIGURED_PRICING_API_ENDPOINT=$( infracost configure get pricing_api_endpoint )" >> $GITHUB_ENV
       - name: Verify
-        shell: python
+        shell: bash
         run: |
-          import sys, os
-          sys.exit(
-              int(not os.environ["INFRACOST_LATEST_VERSION"] == os.environ["INFRACOST_VERSION_INSTALLED"])
-          )
+          if [ $INFRACOST_LATEST_VERSION != $INFRACOST_VERSION_INSTALLED ]; then
+            echo "Unexpected api_key, got: $CONFIGURED_API_KEY"
+            exit 1;
+          elif [ "abcdefg123456" != $CONFIGURED_API_KEY ]; then
+            echo "Unexpected api_key, got: $CONFIGURED_API_KEY"
+            exit 1;
+          elif [ "GBP" != $CONFIGURED_CURRENCY ]; then
+            echo "Unexpected currency, got: $CONFIGURED_CURRENCY"
+            exit 1;
+          elif [ "https://test.test" != $CONFIGURED_PRICING_API_ENDPOINT ]; then
+            echo "Unexpected pricing_api_endpoint, got: $CONFIGURED_PRICING_API_ENDPOINT"
+            exit 1;
+          else
+            exit 0;
+          fi
+

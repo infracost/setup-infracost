@@ -1,95 +1,6 @@
 require('./sourcemap-register.js');/******/ (() => { // webpackBootstrap
 /******/ 	var __webpack_modules__ = ({
 
-/***/ 932:
-/***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
-
-const path = __nccwpck_require__(622);
-const core = __nccwpck_require__(186);
-const tc = __nccwpck_require__(784);
-const io = __nccwpck_require__(436);
-const os = __nccwpck_require__(87);
-
-// arch in [arm, x32, x64...] (https://nodejs.org/api/os.html#os_os_arch)
-// return value in [amd64, 386, arm]
-function mapArch(arch) {
-  const mappings = {
-    x64: 'amd64'
-  };
-  return mappings[arch] || arch;
-}
-
-// os in [darwin, linux, win32...] (https://nodejs.org/api/os.html#os_os_platform)
-// return value in [darwin, linux, windows]
-function mapOS(os) {
-  const mappings = {
-    win32: 'windows'
-  };
-  return mappings[os] || os;
-}
-
-function getDownloadObject(version) {
-  let path = `releases/download/v${ version }`
-  if (version === 'latest') {
-    path = `releases/latest/download`
-  }
-
-  const platform = os.platform();
-  const filename = `infracost-${ mapOS(platform) }-${ mapArch(os.arch()) }`;
-  const binaryName = platform === 'win32' ? 'infracost.exe' : filename;
-  const url = `https://github.com/infracost/infracost/${path}/${ filename }.tar.gz`;
-  return {
-    url,
-    binaryName
-  };
-}
-
-// Rename infracost-<platform>-<arch> to infracost
-async function renameBinary(pathToCLI, binaryName) {
-  if(!binaryName.endsWith('.exe')) {
-    const source = path.join(pathToCLI, binaryName);
-    const target = path.join(pathToCLI, 'infracost');
-    core.debug(`Moving ${source} to ${target}.`);
-    try {
-      await io.mv(source, target);
-    } catch (e) {
-      core.error(`Unable to move ${source} to ${target}.`);
-      throw e;
-    }
-  }
-}
-
-async function setup() {
-  try {
-    // Get version of tool to be installed
-    const version = core.getInput('version');
-
-    // Download the specific version of the tool, e.g. as a tarball/zipball
-    const download = getDownloadObject(version);
-    const pathToTarball = await tc.downloadTool(download.url);
-
-    // Extract the tarball onto host runner
-    const pathToCLI = await tc.extractTar(pathToTarball);
-
-    // Rename the platform/architecture specific binary to 'infracost'
-    await renameBinary(pathToCLI, download.binaryName)
-
-    // Expose the tool by adding it to the PATH
-    core.addPath(pathToCLI);
-  } catch (e) {
-    core.setFailed(e);
-  }
-}
-
-module.exports = setup
-
-if (require.main === require.cache[eval('__filename')]) {
-  setup();
-}
-
-
-/***/ }),
-
 /***/ 351:
 /***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
@@ -5495,6 +5406,123 @@ module.exports = v4;
 
 /***/ }),
 
+/***/ 144:
+/***/ (function(module, __unused_webpack_exports, __nccwpck_require__) {
+
+"use strict";
+
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+const path = __nccwpck_require__(622);
+const core = __nccwpck_require__(186);
+const tc = __nccwpck_require__(784);
+const io = __nccwpck_require__(436);
+const os = __nccwpck_require__(87);
+const exec = __nccwpck_require__(514);
+// arch in [arm, x32, x64...] (https://nodejs.org/api/os.html#os_os_arch)
+// return value in [amd64, 386, arm]
+function mapArch(arch) {
+    const mappings = {
+        x64: 'amd64'
+    };
+    return mappings[arch] || arch;
+}
+// os in [darwin, linux, win32...] (https://nodejs.org/api/os.html#os_os_platform)
+// return value in [darwin, linux, windows]
+function mapOS(os) {
+    const mappings = {
+        win32: 'windows'
+    };
+    return mappings[os] || os;
+}
+function getDownloadObject(version) {
+    let path = `releases/download/v${version}`;
+    if (version === 'latest') {
+        path = `releases/latest/download`;
+    }
+    const platform = os.platform();
+    const filename = `infracost-${mapOS(platform)}-${mapArch(os.arch())}`;
+    const binaryName = platform === 'win32' ? 'infracost.exe' : filename;
+    const url = `https://github.com/infracost/infracost/${path}/${filename}.tar.gz`;
+    return {
+        url,
+        binaryName
+    };
+}
+// Rename infracost-<platform>-<arch> to infracost
+function renameBinary(pathToCLI, binaryName) {
+    return __awaiter(this, void 0, void 0, function* () {
+        if (!binaryName.endsWith('.exe')) {
+            const source = path.join(pathToCLI, binaryName);
+            const target = path.join(pathToCLI, 'infracost');
+            core.debug(`Moving ${source} to ${target}.`);
+            try {
+                yield io.mv(source, target);
+            }
+            catch (e) {
+                core.error(`Unable to move ${source} to ${target}.`);
+                throw e;
+            }
+        }
+    });
+}
+function setup() {
+    return __awaiter(this, void 0, void 0, function* () {
+        try {
+            // Get version of tool to be installed
+            const version = core.getInput('version');
+            // Download the specific version of the tool, e.g. as a tarball/zipball
+            const download = getDownloadObject(version);
+            const pathToTarball = yield tc.downloadTool(download.url);
+            // Extract the tarball onto host runner
+            const pathToCLI = yield tc.extractTar(pathToTarball);
+            // Rename the platform/architecture specific binary to 'infracost'
+            yield renameBinary(pathToCLI, download.binaryName);
+            // Expose the tool by adding it to the PATH
+            core.addPath(pathToCLI);
+            // Set configure options
+            const apiKey = core.getInput('api_key');
+            if (apiKey) {
+                const returnCode = yield exec.exec('infracost', ['configure', 'set', 'api_key', apiKey]);
+                if (returnCode !== 0) {
+                    throw new Error(`Error running infracost configure set api_key: ${returnCode}`);
+                }
+            }
+            const currency = core.getInput('currency');
+            if (currency) {
+                const returnCode = yield exec.exec('infracost', ['configure', 'set', 'currency', currency]);
+                if (returnCode !== 0) {
+                    throw new Error(`Error running infracost configure set currency: ${returnCode}`);
+                }
+            }
+            const pricingApiEndpoint = core.getInput('pricing_api_endpoint');
+            if (pricingApiEndpoint) {
+                const returnCode = yield exec.exec('infracost', ['configure', 'set', 'pricing_api_endpoint', pricingApiEndpoint]);
+                if (returnCode !== 0) {
+                    throw new Error(`Error running infracost configure set pricing_api_endpoint: ${returnCode}`);
+                }
+            }
+        }
+        catch (e) {
+            core.setFailed(e);
+        }
+    });
+}
+module.exports = setup;
+if (require.main === require.cache[eval('__filename')]) {
+    setup();
+}
+
+
+/***/ }),
+
 /***/ 357:
 /***/ ((module) => {
 
@@ -5657,7 +5685,7 @@ module.exports = require("util");
 /******/ 	// startup
 /******/ 	// Load entry module and return exports
 /******/ 	// This entry module is referenced by other modules so it can't be inlined
-/******/ 	var __webpack_exports__ = __nccwpck_require__(932);
+/******/ 	var __webpack_exports__ = __nccwpck_require__(144);
 /******/ 	module.exports = __webpack_exports__;
 /******/ 	
 /******/ })()

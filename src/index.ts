@@ -3,6 +3,7 @@ const core = require('@actions/core');
 const tc = require('@actions/tool-cache');
 const io = require('@actions/io');
 const os = require('os');
+const exec = require('@actions/exec');
 
 // arch in [arm, x32, x64...] (https://nodejs.org/api/os.html#os_os_arch)
 // return value in [amd64, 386, arm]
@@ -22,7 +23,7 @@ function mapOS(os) {
   return mappings[os] || os;
 }
 
-function getDownloadObject(version) {
+function getDownloadObject(version): {url: string, binaryName: string} {
   let path = `releases/download/v${ version }`
   if (version === 'latest') {
     path = `releases/latest/download`
@@ -70,6 +71,32 @@ async function setup() {
 
     // Expose the tool by adding it to the PATH
     core.addPath(pathToCLI);
+
+    // Set configure options
+    const apiKey = core.getInput('api_key');
+    if (apiKey) {
+      const returnCode = await exec.exec('infracost', ['configure', 'set', 'api_key', apiKey])
+      if (returnCode !== 0) {
+        throw new Error(`Error running infracost configure set api_key: ${returnCode}`);
+      }
+    }
+
+    const currency = core.getInput('currency');
+    if (currency) {
+      const returnCode = await exec.exec('infracost', ['configure', 'set', 'currency', currency])
+      if (returnCode !== 0) {
+        throw new Error(`Error running infracost configure set currency: ${returnCode}`);
+      }
+    }
+
+    const pricingApiEndpoint = core.getInput('pricing_api_endpoint');
+    if (pricingApiEndpoint) {
+      const returnCode = await exec.exec('infracost', ['configure', 'set', 'pricing_api_endpoint', pricingApiEndpoint])
+      if (returnCode !== 0) {
+        throw new Error(`Error running infracost configure set pricing_api_endpoint: ${returnCode}`);
+      }
+    }
+
   } catch (e) {
     core.setFailed(e);
   }
