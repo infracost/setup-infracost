@@ -1,5 +1,7 @@
 # setup-infracost
 
+**Work in progress - ping us on https://infracost.io/community-chat if you want to use this.**
+
 Infracost enables you to see cloud cost estimates for Terraform in pull requests.
 
 This GitHub Action downloads and installs the [Infracost CLI](https://github.com/infracost/infracost) in your GitHub Actions workflow. Subsequent steps in the same job can run the CLI in the same way it is run on the command line.
